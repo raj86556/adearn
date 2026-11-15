@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdEarn</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#14161f;--muted:#6b7080;--accent:#16a34a;--line:#e4e6ee;--warn:#b45309}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1015;--card:#181b23;--text:#eef0f6;--muted:#9aa0b2;--accent:#22c55e;--line:#2a2e3a;--warn:#f59e0b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 90px}
+.hide{display:none!important}
+.muted{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px;font-weight:600;background:var(--accent);color:#fff;width:100%}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.alt{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.g{background:#fff;color:#222;border:1px solid #d5d7de}
+input{font:inherit;width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);margin:6px 0}
+.login{min-height:80vh;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.bal{font-size:38px;font-weight:700;color:var(--accent)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex}
+.tabs button{border-radius:0;background:transparent;color:var(--muted);flex:1}
+.tabs button.on{color:var(--accent);border-top:2px solid var(--accent)}
+.seg{display:flex;gap:8px;margin:8px 0}
+.seg button{padding:10px}
+.seg button.off{background:transparent;color:var(--text);border:1px solid var(--line)}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+li:last-child{border:0}
+.note{font-size:12px;color:var(--warn);margin-top:6px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal.on{display:flex}
+.ad{background:var(--card);border-radius:18px;max-width:420px;width:100%;padding:18px;text-align:center}
+.adbox{height:190px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="s1" class="login">
+  <div style="font-size:56px">💰</div>
+  <h1>AdEarn</h1>
+  <p class="muted">Ad dekho, wallet mein paise judein.<br>Har ad ke ₹0.10, ₹100 hone par withdraw.</p>
+  <div class="card" style="margin-top:22px">
+    <button class="g" id="gbtn">Google se continue karo</button>
+    <div class="note" id="lmsg"></div>
+  </div>
+</section>
+
+<section id="s2" class="hide">
+  <div class="top"><b id="uname"></b><button class="alt" id="out" style="width:auto;padding:8px 14px">Logout</button></div>
+
+  <div id="tAd">
+    <div class="card">
+      <div class="muted">Balance</div>
+      <div class="bal b">₹0.00</div>
+      <div class="muted">Aaj ke ads: <b id="cnt">0</b>/50 · Har ad: ₹0.10</div>
+      <div class="bar"><i id="dp"></i></div>
+    </div>
+    <div class="card">
+      <button id="watch">▶ Ad dekho, ₹0.10 kamao</button>
+      <div class="note" id="amsg"></div>
+    </div>
+  </div>
+
+  <div id="tWal" class="hide">
+    <div class="card">
+      <div class="muted">Wallet balance</div>
+      <div class="bal b">₹0.00</div>
+      <div class="muted">Withdraw ke liye ₹100 chahiye</div>
+      <div class="bar"><i id="wp"></i></div>
+    </div>
+    <div class="card">
+      <b>Paise nikalo</b>
+      <div class="seg"><button id="mU">UPI</button><button id="mB" class="off">Bank account</button></div>
+      <div id="fU"><input id="upi" placeholder="UPI ID (naam@upi)" autocomplete="off"></div>
+      <div id="fB" class="hide">
+        <input id="bn" placeholder="Account holder ka naam" autocomplete="off">
+        <input id="ac" inputmode="numeric" placeholder="Account number" autocomplete="off">
+        <input id="ifsc" placeholder="IFSC code" autocomplete="off">
+      </div>
+      <button id="wd" style="margin-top:6px">Withdraw request bhejo</button>
+      <div class="note" id="wdMsg"></div>
+    </div>
+    <div class="card"><b>Withdraw requests</b><ul id="hist"></ul></div>
+  </div>
+</section>
+</div>
+
+<div class="tabs hide" id="tabs"><button id="bAd" class="on">▶ Ad dekho</button><button id="bWal">👛 Wallet</button></div>
+
+<div class="modal" id="modal">
+  <div class="ad">
+    <div class="muted">Ad chal raha hai – band na karein</div>
+    <div class="adbox">Aapka Ad Yahan 📢</div>
+    <div>Reward milega: <b id="t">15</b> sec mein</div>
+    <div class="bar"><i id="ap"></i></div>
+    <button id="close" disabled style="margin-top:14px">Wait karein…</button>
+  </div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot,serverTimestamp,increment,writeBatch,collection,query,where} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyB2p_jDfuJ3Kb4qJAtaxeqSw3RQzENvlpc",
+  authDomain:"adearn71.firebaseapp.com",
+  projectId:"adearn71",
+  storageBucket:"adearn71.firebasestorage.app",
+  messagingSenderId:"210659518193",
+  appId:"1:210659518193:web:4da667ae33615a445dab50"
+});
+const auth=getAuth(app), db=getFirestore(app);
+const REWARD=10, MIN=10000, DAILY=50, DUR=15;
+const $=i=>document.getElementById(i);
+const rs=p=>"₹"+(p/100).toFixed(2);
+const dayNo=()=>Math.floor((Date.now()+19800000)/86400000); // IST din
+let U=null, D=null, unsubs=[], timer=null, left=0, mode="upi";
+
+$("gbtn").onclick=async()=>{
+  $("lmsg").textContent="";
+  try{await signInWithPopup(auth,new GoogleAuthProvider())}
+  catch(e){$("lmsg").textContent="Login nahi hua: "+(e.code||e.message)}
+};
+$("out").onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,async user=>{
+  unsubs.forEach(f=>f());unsubs=[];
+  if(!user){U=null;D=null;$("s2").classList.add("hide");$("tabs").classList.add("hide");$("s1").classList.remove("hide");return}
+  U=user;
+  const ref=doc(db,"users",user.uid);
+  try{
+    const s=await getDoc(ref);
+    if(!s.exists())await setDoc(ref,{name:user.displayName||"User",email:user.email||"",bal:0,cnt:0,dayNo:0,wd:0,lastAd:serverTimestamp()});
+  }catch(e){$("lmsg").textContent="Database error: "+(e.code||e.message);return}
+  $("s1").classList.add("hide");$("s2").classList.remove("hide");$("tabs").classList.remove("hide");
+  $("uname").textContent=user.displayName||user.email;
+  unsubs.push(onSnapshot(ref,s=>{D=s.data();render()}));
+  unsubs.push(onSnapshot(query(collection(db,"withdrawals"),where("uid","==",user.uid)),s=>{
+    const rows=s.docs.map(d=>d.data()).sort((a,b)=>(b.ts?.seconds||0)-(a.ts?.seconds||0));
+    const h=$("hist");h.innerHTML="";
+    if(!rows.length){const e=document.createElement("li");e.className="muted";e.textContent="Abhi koi request nahi.";h.appendChild(e)}
+    rows.forEach(r=>{
+      const li=document.createElement("li"),a=document.createElement("span"),b=document.createElement("b");
+      a.textContent=(r.method==="upi"?"UPI":"Bank")+" · "+(r.status==="pending"?"Pending":r.status);
+      b.textContent=rs(r.amt);li.appendChild(a);li.appendChild(b);h.appendChild(li);
+    });
+  }));
+});
+
+function todayCnt(){return D&&D.dayNo===dayNo()?D.cnt:0}
+function render(){
+  if(!D)return;
+  document.querySelectorAll(".b").forEach(e=>e.textContent=rs(D.bal));
+  const c=todayCnt();
+  $("cnt").textContent=c;$("dp").style.width=(c/DAILY*100)+"%";
+  $("wp").style.width=Math.min(D.bal/MIN*100,100)+"%";
+  $("watch").disabled=c>=DAILY;
+  $("amsg").textContent=c>=DAILY?"Aaj ki limit poori. Kal wapas aaiye!":"";
+}
+function tab(n){
+  $("tAd").classList.toggle("hide",n!=="ad");$("tWal").classList.toggle("hide",n!=="wal");
+  $("bAd").classList.toggle("on",n==="ad");$("bWal").classList.toggle("on",n==="wal");
+}
+$("bAd").onclick=()=>tab("ad");$("bWal").onclick=()=>tab("wal");
+
+$("watch").onclick=()=>{
+  if(!D||todayCnt()>=DAILY)return;
+  left=DUR;$("t").textContent=left;$("ap").style.width="0";
+  $("close").disabled=true;$("close").textContent="Wait karein…";$("modal").classList.add("on");
+  timer=setInterval(()=>{
+    left--;$("t").textContent=Math.max(left,0);$("ap").style.width=((DUR-left)/DUR*100)+"%";
+    if(left<=0){clearInterval(timer);$("close").disabled=false;$("close").textContent="Reward lein ✓"}
+  },1000);
+};
+$("close").onclick=async()=>{
+  if(left>0)return;
+  $("close").disabled=true;
+  try{
+    await updateDoc(doc(db,"users",U.uid),{bal:increment(REWARD),cnt:todayCnt()+1,dayNo:dayNo(),lastAd:serverTimestamp()});
+    $("amsg").textContent="";
+  }catch(e){$("amsg").textContent="Reward nahi mila, dobara try karein ("+(e.code||"error")+")"}
+  $("modal").classList.remove("on");
+};
+
+function setMode(m){mode=m;$("fU").classList.toggle("hide",m!=="upi");$("fB").classList.toggle("hide",m!=="bank");
+  $("mU").classList.toggle("off",m!=="upi");$("mB").classList.toggle("off",m!=="bank")}
+$("mU").onclick=()=>setMode("upi");$("mB").onclick=()=>setMode("bank");
+
+$("wd").onclick=async()=>{
+  const m=$("wdMsg");let dest="";
+  if(mode==="upi"){
+    const u=$("upi").value.trim();
+    if(!/^[\w.\-]{2,}@[\w]{2,}$/.test(u)){m.textContent="Sahi UPI ID daaliye.";return}
+    dest=u;
+  }else{
+    const n=$("bn").value.trim(),a=$("ac").value.trim(),f=$("ifsc").value.trim().toUpperCase();
+    if(n.length<2||!/^\d{9,18}$/.test(a)||!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(f)){m.textContent="Naam, account number (9-18 ank) aur sahi IFSC daaliye.";return}
+    dest=n+" | "+a+" | "+f;
+  }
+  if(!D||D.bal<MIN){m.textContent="Withdraw ke liye kam se kam ₹100 chahiye.";return}
+  const n=(D.wd||0)+1, b=writeBatch(db);
+  b.set(doc(db,"withdrawals",U.uid+"_"+n),{uid:U.uid,amt:D.bal,method:mode,dest:dest,status:"pending",ts:serverTimestamp()});
+  b.update(doc(db,"users",U.uid),{bal:0,wd:n});
+  $("wd").disabled=true;
+  try{await b.commit();m.textContent="Request bhej di gayi. Payment 24-48 ghante mein hoga."}
+  catch(e){m.textContent="Request fail hui ("+(e.code||"error")+"). Dobara try karein."}
+  $("wd").disabled=false;
+};
+</script>
+</body>
+</html>
